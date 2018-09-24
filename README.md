@@ -49,7 +49,7 @@ mergeri(matcher, base, over)
 ```
 
 ### Result
-```json
+```js
 {
     a: {
         b: [
