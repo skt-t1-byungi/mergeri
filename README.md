@@ -135,7 +135,7 @@ const over = { a: [4, 5] }
 mergeri(null, base, over) // => {a: [1, 2, 3, 4, 5]}
 ```
 
-Can merge arrays into index by comparing keys.
+Can merge arrays by index through key comparisons.
 ```js
 const matcher = { 'a': (toKey, fromKey) => toKey === fromKey }
 
