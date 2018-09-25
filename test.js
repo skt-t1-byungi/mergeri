@@ -157,7 +157,7 @@ test('wildcard expression #1 - last segment', t => {
     ] } } })
 })
 
-test('wildcard expression #2 - multiple', t => {
+test('wildcard expression #2 - multiple, custom', t => {
     const to = { a: { b: { c: [
         {
             a: [
@@ -190,4 +190,111 @@ test('wildcard expression #2 - multiple', t => {
             ]
         }
     ] } } })
+})
+
+test('wildcard expression #3', t => {
+    const to = {
+        a: 'hello',
+        b: [
+            {
+                id: 1,
+                c: [
+                    {
+                        id: 1000,
+                        d: { a: 1, b: 2 }
+                    },
+                    {
+                        id: 1001,
+                        d: { a: 3 }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                c: [
+                    {
+                        id: 1000,
+                        d: { a: 2 }
+                    },
+                    {
+                        id: 1001,
+                        d: { a: 10 }
+                    }
+                ]
+            }
+        ]
+    }
+
+    const from = {
+        a: 'bye',
+        b: [
+            {
+                id: 2,
+                c: [
+                    {
+                        id: 1000,
+                        d: { b: 4, c: 6 }
+                    },
+                    {
+                        id: 1001,
+                        d: { a: 100 }
+                    }
+                ]
+            },
+            {
+                id: 1,
+                c: [
+                    {
+                        id: 999,
+                        d: { a: 1, b: 2 }
+                    },
+                    {
+                        id: 1000,
+                        d: { c: 3 }
+                    }
+                ]
+            }
+        ]
+    }
+
+    const matcher = {
+        'b': 'id',
+        'b.*.c': 'id'
+    }
+
+    t.deepEqual(mergeri(matcher, to, from), {
+        a: 'bye',
+        b: [
+            {
+                id: 1,
+                c: [
+                    {
+                        id: 1000,
+                        d: { a: 1, b: 2, c: 3 }
+                    },
+                    {
+                        id: 1001,
+                        d: { a: 3 }
+                    },
+                    {
+                        id: 999,
+                        d: { a: 1, b: 2 }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                c: [
+                    {
+                        id: 1000,
+                        d: { a: 2, b: 4, c: 6 }
+                    },
+                    {
+                        id: 1001,
+                        d: { a: 100 }
+                    }
+                ]
+            }
+        ]
+    })
 })

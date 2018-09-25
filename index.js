@@ -39,7 +39,7 @@ function mergeArr (matchers, t, src, path) {
         if (!to) return t.push(from)
 
         if (isExtensible(to) && isExtensible(from)) {
-            path.push(fromK)
+            path.push(toK)
             merge(matchers, to, from, path)
             path.pop()
         } else {
