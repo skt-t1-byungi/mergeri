@@ -1,7 +1,7 @@
 module.exports = mergeri
 
 function mergeri (def, t, ...sources) {
-    const matchers = convertMatchers(def)
+    const matchers = convertMatchers(def || {})
     return sources.reduce((t, src) => merge(matchers, t, Object(src), []), Object(t))
 }
 
@@ -12,7 +12,8 @@ function convertMatchers (def) {
 function convertTester (v) {
     if (typeof v === 'function') return v
     if (typeof v === 'string') return (k1, k2, v1, v2) => objectGet(v1, v) === objectGet(v2, v)
-    return (k1, k2, v1, v2) => v.every(k => objectGet(v1, k) === objectGet(v2, k))
+    if (Array.isArray(v)) return (k1, k2, v1, v2) => v.every(k => objectGet(v1, k) === objectGet(v2, k))
+    return () => false
 }
 
 function merge (matchers, t, src, path) {

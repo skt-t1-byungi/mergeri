@@ -118,11 +118,28 @@ const matcher = {
 Can also use a custom function.
 ```js
 const matcher = { 
-    "a.b": function(toK, fromK, toValue, fromValue, toCtx, fromCtx) {
+    "a.b": function(toKey, fromKey, toValue, fromValue, toCtx, fromCtx) {
         return toValue.data.id === fromValue.data.id
     }
     // same as "data.id".
 }
+```
+
+## Tips
+### Merge arrays by index
+When merging an array, "concat" is the default behavior if there is no matcher.
+```js
+const base = { a: [1, 2, 3] }
+const over = { a: [4, 5] }
+
+mergeri(null, base, over) // => {a: [1, 2, 3, 4, 5]}
+```
+
+Can merge arrays into index by comparing keys.
+```js
+const matcher = { 'a': (toKey, fromKey) => toKey === fromKey }
+
+mergeri(matcher, base, over) // => {a: [4, 5, 3]}
 ```
 
 ## License
