@@ -105,8 +105,8 @@ const matcher = {
 #### Custom matcher
 ```js
 const matcher = { 
-    "a.b": function(toKey, fromKey, toValue, fromValue, toObj, fromObj) {
-        return toValue.c.id === fromValue.c.id
+    "a.b": function(targetKey, srcKey, targetValue, srcValue, targetObj, srcObj) {
+        return targetValue.c.id === srcValue.c.id
     }
     // same as {"a.b": "c.id"}
 }

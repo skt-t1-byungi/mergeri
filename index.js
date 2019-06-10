@@ -28,42 +28,42 @@ function merge (matchers, t, src, path) {
     return t
 }
 
-function mergeArr (matchers, t, src, path) {
+function mergeArr (matchers, target, src, path) {
     const tester = findTester(matchers, path)
 
-    if (!tester) return [].push.apply(t, src)
+    if (!tester) return [].push.apply(target, src)
 
-    src.forEach((from, fromK) => {
-        const toK = t.findIndex((to, toK) => tester(toK, fromK, to, from, t, src))
-        const to = t[toK]
+    src.forEach((srcV, srcK) => {
+        const matchedK = target.findIndex((targetV, targetK) => tester(targetK, srcK, targetV, srcV, target, src))
+        const matched = target[matchedK]
 
-        if (!to) return t.push(from)
+        if (!matched) return target.push(srcV)
 
-        if (isExtensible(to) && isExtensible(from)) {
-            path.push(toK)
-            merge(matchers, to, from, path)
+        if (isExtensible(matched) && isExtensible(srcV)) {
+            path.push(matchedK)
+            merge(matchers, matched, srcV, path)
             path.pop()
         } else {
-            t[toK] = from
+            target[matchedK] = srcV
         }
     })
 }
 
-function mergeObj (matchers, t, src, path) {
+function mergeObj (matchers, target, src, path) {
     const tester = findTester(matchers, path)
-    const tEntries = tester ? Object.entries(t) : undefined
+    const tEntries = tester ? Object.entries(target) : undefined
 
-    Object.entries(src).forEach(([fromK, from]) => {
-        const [toK, to] = tester
-            ? (tEntries.find(([toK, to]) => tester(toK, fromK, to, from, t, src)) || [fromK])
-            : [fromK, t[fromK]]
+    Object.entries(src).forEach(([srcK, srcV]) => {
+        const [matchedK, matched] = tester
+            ? (tEntries.find(([targetK, targetV]) => tester(targetK, srcK, targetV, srcV, target, src)) || [srcK])
+            : [srcK, target[srcK]]
 
-        if (isExtensible(to) && isExtensible(from)) {
-            path.push(toK)
-            merge(matchers, to, from, path)
+        if (isExtensible(matched) && isExtensible(srcV)) {
+            path.push(matchedK)
+            merge(matchers, matched, srcV, path)
             path.pop()
         } else {
-            t[toK] = from
+            target[matchedK] = srcV
         }
     })
 }
