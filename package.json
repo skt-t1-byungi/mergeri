@@ -1,19 +1,16 @@
 {
   "name": "mergeri",
-  "description": "Effectively deep merge objects by matcher",
+  "description": "Simple object merge using matcher.",
   "version": "0.0.3",
   "author": "skt-t1-byungi <tiniwz@gmail.com>",
   "repository": "https://github.com/skt-t1-byungi/mergeri.git",
   "keywords": [
     "assign",
-    "deep assign",
     "copy",
     "merge",
-    "deep merge",
-    "config merge",
-    "deep",
-    "config",
-    "combine"
+    "extend",
+    "match",
+    "matcher"
   ],
   "files": [
     "index.js"

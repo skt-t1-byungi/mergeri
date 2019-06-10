@@ -1,65 +1,59 @@
 # mergeri
-Effectively deep merge objects by matcher.
+> Simple object merge using matcher.
 
 [![npm](https://img.shields.io/npm/v/mergeri.svg?style=flat-square)](https://www.npmjs.com/package/mergeri)
 
-
 ![merge objects](pain.gif)
-
-Merging objects that are not matched by keys is pain. 
-However, using megeri can solve it.
 
 ## Install
 ```sh
-yarn add mergeri
+npm i mergeri
 ```
 
-## Usage
-### Code
+## Example
+### Basic
 ```js
-const base = {
+const obj1 = {
     a: {
         b: [
             {
                 id: 1000,
-                data: { a: 1, b: 2 }
+                data: { a: 1 }
             }
         ]
     }
 }
 
-const over = {
+const obj2 = {
     a: {
         b: [
             {
                 id: 999,
-                data: { a: 1 }
+                data: { a: 2 }
             },
             {
                 id: 1000,
-                data: { c: 3 }
+                data: { b: 3 }
             }
         ]
     }
 }
 
-const matcher = { 'a.b': 'id' }
-
-mergeri(matcher, base, over)
+const result = mergeri({ 'a.b': 'id' }, obj1, obj2)
 ```
 
-### Result
+`result`
 ```js
 {
     a: {
         b: [
             {
                 id: 999,
-                data: { a: 1 }
+                data: { a: 2 }
             },
             {
                 id: 1000,
-                data: { a: 1, b: 2, c: 3 }
+                data: { a: 1, b: 3 }
             }
         ]
     }
@@ -68,18 +62,16 @@ mergeri(matcher, base, over)
 
 ## API
 ### mergeri(matcher, target, src1, [src2, src3...])
-Effectively deep merge objects by matcher. Returns the changed target object.
 
-### Matcher
-Value is a matcher, and the key is a path using the matcher. 
+#### Matcher
 
-#### Dot notation
-Path and matcher use dot notation.
+##### Dot notation
 ```js
-const target = {
+const obj = {
     a: { 
         b: [
-            {c: {d: 'id' }}
+            {c: {d: 1 }},
+            {c: {d: 2 }}
         ] 
     }
 }
@@ -88,7 +80,6 @@ const matcher = { "a.b": "c.d" }
 ```
 
 #### Multiple matchers
-Multiple matchers can be used together.
 ```js
 const matcher = { 
     "a": "b.c.d" ,
@@ -98,49 +89,29 @@ const matcher = {
 ```
 
 #### Wildcard
-Wildcards are also supported. However, a matcher must be defined for where wildcards are used.
 ```js
 const matcher = { 
-    "a.*.c": "other_id",
-    "a": "id" // Required for "a.*.c"
+    "a.*.c": "other_id"
 }
 ```
 
 #### Complex matcher
-Can specify a complex matcher using an array.
 ```js
 const matcher = { 
     "a.b": ["id", "other_id"]
 }
 ```
 
-#### Custom function matcher
-Can also use a custom function.
+#### Custom matcher
 ```js
 const matcher = { 
-    "a.b": function(toKey, fromKey, toValue, fromValue, toCtx, fromCtx) {
-        return toValue.data.id === fromValue.data.id
+    "a.b": function(toKey, fromKey, toValue, fromValue, toObj, fromObj) {
+        return toValue.c.id === fromValue.c.id
     }
-    // same as "data.id".
+    // same as {"a.b": "c.id"}
 }
 ```
 
-## Tips
-### Merge arrays by index
-When merging an array, "concat" is the default behavior if there is no matcher.
-```js
-const base = { a: [1, 2, 3] }
-const over = { a: [4, 5] }
-
-mergeri(null, base, over) // => {a: [1, 2, 3, 4, 5]}
-```
-
-Can merge arrays by index through key comparisons.
-```js
-const matcher = { 'a': (toKey, fromKey) => toKey === fromKey }
-
-mergeri(matcher, base, over) // => {a: [4, 5, 3]}
-```
 
 ## License
 MIT
