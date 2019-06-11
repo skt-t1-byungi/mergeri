@@ -1,74 +1,66 @@
 const test = require('ava')
 const mergeri = require('.')
 
-test('returns to', t => {
-    const to = {}
-    t.is(mergeri({}, to), to)
+test('returns target', t => {
+    const target = {}
+    t.is(mergeri({}, target), target)
 })
 
-test('shallow assign', t => {
-    const to = { a: 1, b: 2 }
-    const from = { b: 5, c: 3 }
-
-    t.deepEqual(mergeri({}, to, from), { a: 1, b: 5, c: 3 })
+test('assign obj#1', t => {
+    const target = { a: 1, b: 2 }
+    const src = { b: 5, c: 3 }
+    t.deepEqual(mergeri(null, target, src), { a: 1, b: 5, c: 3 })
 })
 
-test('assign each obj', t => {
-    const to = { a: { a: 1, b: 2 } }
-    const from = { a: { a: 5, c: 3 } }
-
-    t.deepEqual(mergeri({}, to, from), { a: { a: 5, b: 2, c: 3 } })
+test('assign obj#2', t => {
+    const target = { a: { a: 1, b: 2 } }
+    const src = { a: { a: 5, c: 3 } }
+    t.deepEqual(mergeri(null, target, src), { a: { a: 5, b: 2, c: 3 } })
 })
 
-test('assign each obj more', t => {
-    const to = { a: { a: 1, b: 2 } }
-    const from1 = { a: { a: 5, c: 3 } }
-    const from2 = { a: { c: 5, d: 4 } }
-
-    t.deepEqual(mergeri({}, to, from1, from2), { a: { a: 5, b: 2, c: 5, d: 4 } })
+test('assign obj#3', t => {
+    const target = { a: { a: 1, b: 2 } }
+    const src1 = { a: { a: 5, c: 3 } }
+    const src2 = { a: { c: 5, d: 4 } }
+    t.deepEqual(mergeri(null, target, src1, src2), { a: { a: 5, b: 2, c: 5, d: 4 } })
 })
 
-test('concat each arr', t => {
-    const to = { a: [1, 2, 3] }
-    const from = { a: [4, 5] }
-
-    t.deepEqual(mergeri({}, to, from), { a: [1, 2, 3, 4, 5] })
+test('concat arr', t => {
+    const target = { a: [1, 2, 3] }
+    const src = { a: [4, 5] }
+    t.deepEqual(mergeri(null, target, src), { a: [1, 2, 3, 4, 5] })
 })
 
-test('assign array by str matcher', t => {
-    const to = { a: [
+test('prop matcher', t => {
+    const target = { a: [
         { id: 2, v: 'a' },
         { id: 1, v: 'b' }
     ] }
-    const from = { a: [
+    const src = { a: [
         { id: 2, v: 'c' },
         { id: 3, v: 'a' }
     ] }
-
     const matcher = { a: 'id' }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: [
+    t.deepEqual(mergeri(matcher, target, src), { a: [
         { id: 2, v: 'c' },
         { id: 1, v: 'b' },
         { id: 3, v: 'a' }
     ] })
 })
 
-test('assign array by multiple str matcher', t => {
-    const to = { a: [
+test('complex matcher', t => {
+    const target = { a: [
         { id: 1, other: 11, v: 'a' },
         { id: 2, other: 12, v: 'b' },
         { id: 3, other: 13, v: 'a' }
     ] }
-    const from = { a: [
+    const src = { a: [
         { id: 1, other: 13, v: 'c' },
         { id: 2, other: 12, v: 'a' },
         { id: 4, other: 11, v: 'a' }
     ] }
-
     const matcher = { a: ['id', 'other'] }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: [
+    t.deepEqual(mergeri(matcher, target, src), { a: [
         { id: 1, other: 11, v: 'a' },
         { id: 2, other: 12, v: 'a' },
         { id: 3, other: 13, v: 'a' },
@@ -77,52 +69,45 @@ test('assign array by multiple str matcher', t => {
     ] })
 })
 
-test('assign obj by str matcher', t => {
-    const to = { a: {
+test('prop matcher on obj', t => {
+    const target = { a: {
         a: { id: 1, v: 'a' },
         b: { id: 2, v: 'b' }
     } }
-    const from = { a: {
+    const src = { a: {
         c: { id: 2, v: 'c' },
         d: { id: 3, v: 'd' }
     } }
-
     const matcher = { a: 'id' }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: {
+    t.deepEqual(mergeri(matcher, target, src), { a: {
         a: { id: 1, v: 'a' },
         b: { id: 2, v: 'c' },
         d: { id: 3, v: 'd' }
     } })
 })
 
-test('assign each array by func matcher', t => {
-    const to = { a: [1, 2, 3] }
-    const from = { a: [4, 5] }
-
+test('custom matcher', t => {
+    const target = { a: [1, 2, 3] }
+    const src = { a: [4, 5] }
     const matcher = { a: (k1, k2) => k1 === k2 }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: [4, 5, 3] })
+    t.deepEqual(mergeri(matcher, target, src), { a: [4, 5, 3] })
 })
 
-test('deep assign array by str matcher', t => {
-    const to = { a: { b: { c: {
+test('dot notation', t => {
+    const target = { a: { b: { c: {
         d: [
             { id: 2, v: 'a' },
             { id: 1, v: 'b' }
         ]
     } } } }
-
-    const from = { a: { b: { c: {
+    const src = { a: { b: { c: {
         d: [
             { id: 2, v: 'c' },
             { id: 3, v: 'a' }
         ]
     } } } }
-
     const matcher = { 'a.b.c.d': 'id' }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: { b: { c: {
+    t.deepEqual(mergeri(matcher, target, src), { a: { b: { c: {
         d: [
             { id: 2, v: 'c' },
             { id: 1, v: 'b' },
@@ -131,24 +116,21 @@ test('deep assign array by str matcher', t => {
     } } } })
 })
 
-test('wildcard expression #1 - last segment', t => {
-    const to = { a: { b: { c: [
+test('wildcard#1 - last', t => {
+    const target = { a: { b: { c: [
         [
             { id: 2, v: 'a' },
             { id: 1, v: 'b' }
         ]
     ] } } }
-
-    const from = { a: { b: { c: [
+    const src = { a: { b: { c: [
         [
             { id: 2, v: 'c' },
             { id: 3, v: 'a' }
         ]
     ] } } }
-
     const matcher = { 'a.b.c.*': 'id' }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: { b: { c: [
+    t.deepEqual(mergeri(matcher, target, src), { a: { b: { c: [
         [
             { id: 2, v: 'c' },
             { id: 1, v: 'b' },
@@ -157,8 +139,26 @@ test('wildcard expression #1 - last segment', t => {
     ] } } })
 })
 
-test('wildcard expression #2 - multiple, custom', t => {
-    const to = { a: { b: { c: [
+test('wildcard#2 - first', t => {
+    const target = [
+        { id: 2, v: 'a' },
+        { id: 1, v: 'b' }
+    ]
+    const src = [
+        { id: 2, v: 'c' },
+        { id: 1, v: 'b' },
+        { id: 3, v: 'a' }
+    ]
+    const matcher = { '*': 'id' }
+    t.deepEqual(mergeri(matcher, target, src), [
+        { id: 2, v: 'a' },
+        { id: 1, v: 'b' },
+        { id: 3, v: 'a' }
+    ])
+})
+
+test('wildcard#3 - multiple', t => {
+    const target = { a: { b: { c: [
         {
             a: [
                 { id: 2, v: 'a' },
@@ -166,8 +166,7 @@ test('wildcard expression #2 - multiple, custom', t => {
             ]
         }
     ] } } }
-
-    const from = { a: { b: { c: [
+    const src = { a: { b: { c: [
         {
             a: [
                 { id: 2, v: 'c' },
@@ -175,13 +174,11 @@ test('wildcard expression #2 - multiple, custom', t => {
             ]
         }
     ] } } }
-
     const matcher = {
         'a.b.c.*.a': 'id',
         'a.b.c': (k1, k2) => k1 === k2
     }
-
-    t.deepEqual(mergeri(matcher, to, from), { a: { b: { c: [
+    t.deepEqual(mergeri(matcher, target, src), { a: { b: { c: [
         {
             a: [
                 { id: 2, v: 'c' },
@@ -192,8 +189,8 @@ test('wildcard expression #2 - multiple, custom', t => {
     ] } } })
 })
 
-test('wildcard expression #3', t => {
-    const to = {
+test('wildcard#4', t => {
+    const target = {
         a: 'hello',
         b: [
             {
@@ -224,8 +221,7 @@ test('wildcard expression #3', t => {
             }
         ]
     }
-
-    const from = {
+    const src = {
         a: 'bye',
         b: [
             {
@@ -256,13 +252,11 @@ test('wildcard expression #3', t => {
             }
         ]
     }
-
     const matcher = {
         'b': 'id',
         'b.*.c': 'id'
     }
-
-    t.deepEqual(mergeri(matcher, to, from), {
+    t.deepEqual(mergeri(matcher, target, src), {
         a: 'bye',
         b: [
             {
