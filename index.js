@@ -1,102 +1,124 @@
 module.exports = mergeri
 
-function mergeri (def, t, ...sources) {
-    const matchers = convertMatchers(def || {})
-    return sources.reduce((t, src) => merge(matchers, t, Object(src), []), Object(t))
-}
+function mergeri (matchers, t) {
+    matchers = convertMatchers(matchers || {})
+    t = Object(t)
 
-function convertMatchers (def) {
-    return Object.entries(def).map(([k, v]) => [k.split('.'), convertTester(v)])
-}
-
-function convertTester (v) {
-    if (typeof v === 'function') return v
-    if (typeof v === 'string') return (k1, k2, v1, v2) => objectGet(v1, v) === objectGet(v2, v)
-    if (Array.isArray(v)) return (k1, k2, v1, v2) => v.every(k => objectGet(v1, k) === objectGet(v2, k))
-    return () => false
-}
-
-function merge (matchers, t, src, path) {
-    if (path.length > 0) matchers = filterMatchers(matchers, path)
-
-    if (Array.isArray(t) && Array.isArray(src)) {
-        mergeArr(matchers, t, src, path)
-    } else {
-        mergeObj(matchers, t, src, path)
-    }
+    var len = arguments.length
+    for (var i = 2; i < len; i++) t = merge(matchers, Object(arguments[i]))
 
     return t
 }
 
-function mergeArr (matchers, target, src, path) {
-    const tester = findTester(matchers, path)
-
-    if (!tester) return [].push.apply(target, src)
-
-    src.forEach((srcV, srcK) => {
-        const matchedK = target.findIndex((targetV, targetK) => tester(targetK, srcK, targetV, srcV, target, src))
-        const matched = target[matchedK]
-
-        if (!matched) return target.push(srcV)
-
-        if (isExtensible(matched) && isExtensible(srcV)) {
-            path.push(matchedK)
-            merge(matchers, matched, srcV, path)
-            path.pop()
-        } else {
-            target[matchedK] = srcV
-        }
-    })
-}
-
-function mergeObj (matchers, target, src, path) {
-    const tester = findTester(matchers, path)
-    const tEntries = tester ? Object.entries(target) : undefined
-
-    Object.entries(src).forEach(([srcK, srcV]) => {
-        const [matchedK, matched] = tester
-            ? (tEntries.find(([targetK, targetV]) => tester(targetK, srcK, targetV, srcV, target, src)) || [srcK])
-            : [srcK, target[srcK]]
-
-        if (isExtensible(matched) && isExtensible(srcV)) {
-            path.push(matchedK)
-            merge(matchers, matched, srcV, path)
-            path.pop()
-        } else {
-            target[matchedK] = srcV
-        }
-    })
-}
-
-function objectGet (src, path) {
-    const paths = path.split('.')
-    while (paths.length) {
-        if ((src = src[paths.shift()]) === undefined) return
+function convertMatchers (matchers) {
+    var res = []
+    for (var k in matchers) {
+        if (!hasOwn(k)) continue
+        var addr = k.split('.')
+        if (addr[addr.length - 1] !== '*') addr.push('*')
+        res.push([addr, convertTester(matchers[k])])
     }
-    return src
+    return res
 }
 
-function findTester (matchers, path) {
-    const matcher = matchers.find(([segments]) => isReached(segments, path))
-    if (matcher) return matcher[1] // tester
+function convertTester (v) {
+    if (typeof v === 'function') return v
+    if (typeof v === 'string') {
+        return function (_, __, tV, srcV) {
+            return get(tV, v) === get(srcV, v)
+        }
+    }
+    if (isArr(v)) {
+        return function (_, __, tV, srcV) {
+            var len = v.length
+            for (var i = 0; i < len; i++) {
+                if (get(tV, v[i]) !== get(srcV, v[i])) return false
+            }
+            return true
+        }
+    }
+    return returnFalse
 }
 
-function filterMatchers (matchers, path) {
-    return matchers.filter(([segments]) => isReached(segments, path, true))
-}
+function merge (matchers, root, src) {
+    var curr = [root, src, []]
+    var stack = [curr]
+    var t, paths, tester, srcK, tK, found
 
-function isReached (segments, path, isPath) {
-    const len = (isPath ? path : segments).length
+    while (curr = stack.pop()) {
+        t = curr[0]
+        src = curr[1]
+        paths = curr[2]
 
-    for (let i = 0; i < len; i++) {
-        const seg = segments[i]
-        if (seg !== path[i] && seg !== '*') return false
+        for (srcK in src) {
+            if (!hasOwn(src, srcK)) continue
+
+            if (tester = findTester(matchers, paths)) {
+                found = false
+                for (tK in t) {
+                    if (hasOwn(t, tK) && tester(tK, srcK, t[tK], src[srcK], t, src)) {
+                        found = true
+                        break
+                    }
+                }
+                if (!found) tK = srcK
+            } else {
+                tK = srcK
+            }
+
+            if (hasOwn(t, tK) && isExtensible(t[tK]) && isExtensible(src[srcK])) {
+                stack.push([t[tK], src[srcK], paths.concat(tK)])
+                continue
+            }
+
+            if (isArr(t) && isArr(src)) {
+                t.push(src[srcK])
+            } else {
+                t[tK] = src[srcK]
+            }
+        }
     }
 
+    return root
+}
+
+function findTester (matchers, paths) {
+    var len = matchers.length
+    for (var i = 0; i < len; i++) {
+        if (isMatched(matchers[i][0], paths)) return matchers[i][1]
+    }
+}
+
+function isMatched (addr, paths) {
+    var len = paths.length
+    for (var i = 0; i < len; i++) {
+        var p = paths[i]
+        if (p !== addr[i] && addr[i] !== '*') return false
+    }
     return true
 }
 
+function isArr (arr) {
+    return Object.prototype.toString.call(arr) === '[object Array]'
+}
+
+function hasOwn (o, prop) {
+    return Object.prototype.hasOwnProperty.call(o, prop)
+}
+
+function get (o, str) {
+    var paths = str.split('.')
+    while (paths.length) {
+        if ((o = o[paths.shift()]) === undefined) return
+    }
+    return o
+}
+
 function isExtensible (obj) {
-    const type = typeof obj
+    var type = typeof obj
     return obj && (type === 'object' || type === 'function')
+}
+
+function returnFalse () {
+    return false
 }
