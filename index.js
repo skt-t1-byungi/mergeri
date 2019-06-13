@@ -5,31 +5,38 @@ function mergeri (matchers, t) {
     t = Object(t)
 
     var len = arguments.length
-    for (var i = 2; i < len; i++) t = merge(matchers, Object(arguments[i]))
+    for (var i = 2; i < len; i++) t = merge(matchers, t, Object(arguments[i]))
 
     return t
 }
 
 function convertMatchers (matchers) {
     var res = []
+
     for (var k in matchers) {
-        if (!hasOwn(k)) continue
-        var addr = k.split('.')
-        if (addr[addr.length - 1] !== '*') addr.push('*')
-        res.push([addr, convertTester(matchers[k])])
+        if (!hasOwn(matchers, k)) continue
+
+        var tester = convertTester(matchers[k])
+        if (k.slice(-1) !== '*') k += '.*'
+
+        res.push([k.split('.'), tester])
     }
+
     return res
 }
 
 function convertTester (v) {
     if (typeof v === 'function') return v
+
     if (typeof v === 'string') {
         return function (_, __, tV, srcV) {
-            return get(tV, v) === get(srcV, v)
+            return isObjAll(tV, srcV) && get(tV, v) === get(srcV, v)
         }
     }
+
     if (isArr(v)) {
         return function (_, __, tV, srcV) {
+            if (!isObjAll(tV, srcV)) return false
             var len = v.length
             for (var i = 0; i < len; i++) {
                 if (get(tV, v[i]) !== get(srcV, v[i])) return false
@@ -37,23 +44,24 @@ function convertTester (v) {
             return true
         }
     }
+
     return returnFalse
 }
 
 function merge (matchers, root, src) {
     var curr = [root, src, []]
     var stack = [curr]
-    var t, paths, tester, srcK, tK, found
+    var t, addr, tester, srcK, tK, found
 
     while (curr = stack.pop()) {
         t = curr[0]
         src = curr[1]
-        paths = curr[2]
+        addr = curr[2]
 
         for (srcK in src) {
             if (!hasOwn(src, srcK)) continue
 
-            if (tester = findTester(matchers, paths)) {
+            if (tester = findTester(matchers, addr)) {
                 found = false
                 for (tK in t) {
                     if (hasOwn(t, tK) && tester(tK, srcK, t[tK], src[srcK], t, src)) {
@@ -61,39 +69,48 @@ function merge (matchers, root, src) {
                         break
                     }
                 }
-                if (!found) tK = srcK
+                if (!found) tK = isArr(t) ? t.length : srcK
             } else {
                 tK = srcK
             }
 
-            if (hasOwn(t, tK) && isExtensible(t[tK]) && isExtensible(src[srcK])) {
-                stack.push([t[tK], src[srcK], paths.concat(tK)])
+            if (!tester && isArr(t) && isArr(src)) {
+                t.push(src[srcK])
                 continue
             }
 
-            if (isArr(t) && isArr(src)) {
-                t.push(src[srcK])
-            } else {
-                t[tK] = src[srcK]
+            if (hasOwn(t, tK) && isExtensible(t[tK]) && isExtensible(src[srcK])) {
+                stack.push([t[tK], src[srcK], addr.concat(tK)])
+                continue
             }
+
+            t[tK] = src[srcK]
         }
     }
 
     return root
 }
 
-function findTester (matchers, paths) {
+function findTester (matchers, addr) {
     var len = matchers.length
     for (var i = 0; i < len; i++) {
-        if (isMatched(matchers[i][0], paths)) return matchers[i][1]
+        if (isMatched(matchers[i][0], addr)) return matchers[i][1]
     }
 }
 
-function isMatched (addr, paths) {
-    var len = paths.length
+function isMatched (paths, addr) {
+    var len = addr.length
+    if (len !== paths.length - 1) return false
     for (var i = 0; i < len; i++) {
-        var p = paths[i]
-        if (p !== addr[i] && addr[i] !== '*') return false
+        if (addr[i] !== paths[i] && paths[i] !== '*') return false
+    }
+    return true
+}
+
+function isObjAll () {
+    var len = arguments.length
+    for (var i = 0; i < len; i++) {
+        if (typeof arguments[i] !== 'object') return false
     }
     return true
 }
