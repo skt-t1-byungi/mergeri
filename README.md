@@ -79,7 +79,7 @@ const obj = {
 const matcher = { "a.b.*": "c.d" }
 ```
 
-#### Multiple matchers
+##### Multiple matchers
 ```js
 const matcher = { 
     "a.*": "b.c.d" ,
@@ -88,21 +88,21 @@ const matcher = {
 }
 ```
 
-#### Middle wildcard
+##### Middle wildcard
 ```js
 const matcher = { 
     "a.*.c.*": "other_id"
 }
 ```
 
-#### Complex matcher
+##### Complex matcher
 ```js
 const matcher = { 
     "a.b.*": ["id", "other_id"]
 }
 ```
 
-#### Custom matcher
+##### Custom matcher
 ```js
 const matcher = { 
     "a.b.*": function(targetKey, srcKey, targetValue, srcValue, targetObj, srcObj) {
@@ -120,7 +120,7 @@ mergeri(null, {a: [1]}, {a: [2, 3]}) // => {a: [1, 2, 3]}
 mergeri({'a': (targetKey, srcKey) => targetKey === srcKey }, {a: [1]}, {a: [2, 3]}) // => {a: [2, 3]}
 ```
 
-#### Last wildcard is optional.
+##### Last wildcard is optional.
 ```js
 const matcher = { 'a.b': 'id' } // => same as {'a.b.*': 'id'}
 ```
