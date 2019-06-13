@@ -1,7 +1,7 @@
 {
   "name": "mergeri",
   "description": "Simple object merge using matcher.",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "author": "skt-t1-byungi <tiniwz@gmail.com>",
   "repository": "https://github.com/skt-t1-byungi/mergeri.git",
   "keywords": [
