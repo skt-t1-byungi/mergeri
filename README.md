@@ -39,7 +39,7 @@ const obj2 = {
     }
 }
 
-const result = mergeri({ 'a.b': 'id' }, obj1, obj2)
+const result = mergeri({ 'a.b.*': 'id' }, obj1, obj2)
 ```
 
 `result`
@@ -76,42 +76,54 @@ const obj = {
     }
 }
 
-const matcher = { "a.b": "c.d" }
+const matcher = { "a.b.*": "c.d" }
 ```
 
 #### Multiple matchers
 ```js
 const matcher = { 
-    "a": "b.c.d" ,
-    "e.f.g": "h.i",
-    "x.y": "z",
+    "a.*": "b.c.d" ,
+    "e.f.g.*": "h.i",
+    "x.y.*": "z",
 }
 ```
 
-#### Wildcard
+#### Middle wildcard
 ```js
 const matcher = { 
-    "a.*.c": "other_id"
+    "a.*.c.*": "other_id"
 }
 ```
 
 #### Complex matcher
 ```js
 const matcher = { 
-    "a.b": ["id", "other_id"]
+    "a.b.*": ["id", "other_id"]
 }
 ```
 
 #### Custom matcher
 ```js
 const matcher = { 
-    "a.b": function(targetKey, srcKey, targetValue, srcValue, targetObj, srcObj) {
+    "a.b.*": function(targetKey, srcKey, targetValue, srcValue, targetObj, srcObj) {
         return targetValue.c.id === srcValue.c.id
     }
-    // same as {"a.b": "c.id"}
+    // same as {"a.b.*": "c.id"}
 }
 ```
 
+##### Array merging
+The default behavior is `concat`. but, `Custom key matcher` change the behavior to index merging.
+
+```js
+mergeri(null, {a: [1]}, {a: [2, 3]}) // => {a: [1, 2, 3]}
+mergeri({'a': (targetKey, srcKey) => targetKey === srcKey }, {a: [1]}, {a: [2, 3]}) // => {a: [2, 3]}
+```
+
+#### Last wildcard is optional.
+```js
+const matcher = { 'a.b': 'id' } // => same as {'a.b.*': 'id'}
+```
 
 ## License
 MIT
