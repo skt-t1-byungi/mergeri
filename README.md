@@ -1,5 +1,5 @@
 # mergeri
-> Simple object merge using matcher.
+> A simple object merger using matcher.
 
 [![npm](https://img.shields.io/npm/v/mergeri.svg?style=flat-square)](https://www.npmjs.com/package/mergeri)
 
@@ -68,11 +68,11 @@ const result = mergeri({ 'a.b.*': 'id' }, obj1, obj2)
 ##### Dot notation
 ```js
 const obj = {
-    a: { 
+    a: {
         b: [
             {c: {d: 1 }},
             {c: {d: 2 }}
-        ] 
+        ]
     }
 }
 
@@ -81,7 +81,7 @@ const matcher = { "a.b.*": "c.d" }
 
 ##### Multiple matchers
 ```js
-const matcher = { 
+const matchers = {
     "a.*": "b.c.d" ,
     "e.f.g.*": "h.i",
     "x.y.*": "z",
@@ -90,21 +90,21 @@ const matcher = {
 
 ##### Middle wildcard
 ```js
-const matcher = { 
+const matcher = {
     "a.*.c.*": "other_id"
 }
 ```
 
 ##### Complex matcher
 ```js
-const matcher = { 
+const matcher = {
     "a.b.*": ["id", "other_id"]
 }
 ```
 
 ##### Custom matcher
 ```js
-const matcher = { 
+const matcher = {
     "a.b.*": function(targetKey, srcKey, targetValue, srcValue, targetObj, srcObj) {
         return targetValue.c.id === srcValue.c.id
     }
@@ -117,6 +117,7 @@ The default behavior is `concat`. but, `Custom key matcher` change the behavior 
 
 ```js
 mergeri(null, {a: [1]}, {a: [2, 3]}) // => {a: [1, 2, 3]}
+
 mergeri({'a': (targetKey, srcKey) => targetKey === srcKey }, {a: [1]}, {a: [2, 3]}) // => {a: [2, 3]}
 ```
 

@@ -57,12 +57,11 @@ function merge (matchers, root, src) {
         t = curr[0]
         src = curr[1]
         addr = curr[2]
-        tester = undefined
+        tester = findTester(matchers, addr)
 
         for (srcK in src) {
             if (!hasOwn(src, srcK)) continue
 
-            if (tester === undefined) tester = findTester(matchers, addr)
             if (tester) {
                 found = false
                 for (tK in t) {
@@ -98,7 +97,6 @@ function findTester (matchers, addr) {
     for (var i = 0; i < len; i++) {
         if (isMatched(matchers[i][0], addr)) return matchers[i][1]
     }
-    return null
 }
 
 function isMatched (paths, addr) {
