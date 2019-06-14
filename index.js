@@ -72,12 +72,7 @@ function merge (matchers, root, src) {
                 }
                 if (!found) tK = isArr(t) ? t.length : srcK
             } else {
-                tK = srcK
-            }
-
-            if (!tester && isArr(t) && isArr(src)) {
-                t.push(src[srcK])
-                continue
+                tK = isArr(t) && isArr(src) ? t.length : srcK
             }
 
             if (hasOwn(t, tK) && isExtensible(t[tK]) && isExtensible(src[srcK])) {
