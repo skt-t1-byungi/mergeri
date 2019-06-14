@@ -127,9 +127,9 @@ function get (o, str) {
     return o
 }
 
-function isExtensible (obj) {
-    var type = typeof obj
-    return obj && (type === 'object' || type === 'function')
+function isExtensible (o) {
+    var type = typeof o
+    return o && (type === 'object' || type === 'function')
 }
 
 function returnFalse () {
