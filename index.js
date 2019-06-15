@@ -94,11 +94,11 @@ function findTester (matchers, addr) {
     }
 }
 
-function isMatched (paths, addr) {
+function isMatched (keys, addr) {
     var len = addr.length
-    if (len !== paths.length - 1) return false
+    if (len !== keys.length - 1) return false
     for (var i = 0; i < len; i++) {
-        if (addr[i] !== paths[i] && paths[i] !== '*') return false
+        if (addr[i] !== keys[i] && keys[i] !== '*') return false
     }
     return true
 }
@@ -120,9 +120,9 @@ function hasOwn (o, prop) {
 }
 
 function get (o, str) {
-    var paths = str.split('.')
-    while (paths.length) {
-        if ((o = o[paths.shift()]) === undefined) return
+    var keys = str.split('.')
+    while (keys.length) {
+        if ((o = o[keys.shift()]) === undefined) return
     }
     return o
 }
