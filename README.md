@@ -79,7 +79,7 @@ const obj = {
 const matcher = { "a.b.*": "c.d" }
 ```
 
-##### Multiple matchers
+##### Multiple matcher
 ```js
 const matchers = {
     "a.*": "b.c.d" ,
