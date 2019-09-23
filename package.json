@@ -13,9 +13,11 @@
         "matcher"
     ],
     "files": [
-        "index.js"
+        "index.js",
+        "index.d.ts"
     ],
     "main": "index.js",
+    "types": "index.d.ts",
     "license": "MIT",
     "scripts": {
         "test": "ava"
