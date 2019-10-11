@@ -5,7 +5,7 @@ function mergeri (matchers, t) {
     t = Object(t)
 
     var len = arguments.length
-    for (var i = 2; i < len; i++) t = merge(matchers, t, Object(arguments[i]))
+    for (var i = 2; i < len; i++) t = merge(matchers, t, Object(arguments[i]), [])
 
     return t
 }
@@ -17,7 +17,7 @@ function convertMatchers (matchers) {
         if (!hasOwn(matchers, k)) continue
 
         var tester = convertTester(matchers[k])
-        if (k.slice(-1) !== '*') k += '.*'
+        if (k.length > 1 && k.slice(-2) === '.*') k = k.slice(0, -2)
 
         res.push([k.split('.'), tester])
     }
@@ -48,56 +48,73 @@ function convertTester (v) {
     return returnFalse
 }
 
-function merge (matchers, root, src) {
-    var curr = [root, src, []]
-    var stack = [curr]
-    var t, addr, tester, srcK, tK, found
+function merge (matchers, t, src, addr) {
+    matchers = filterMatchers(matchers, addr)
 
-    while (curr = stack.pop()) {
-        t = curr[0]
-        src = curr[1]
-        addr = curr[2]
-        tester = undefined
+    var tester, srcK, tK, found
 
-        for (srcK in src) {
-            if (!hasOwn(src, srcK)) continue
+    for (srcK in src) {
+        if (!hasOwn(src, srcK)) continue
 
-            if (tester === undefined) tester = findTester(matchers, addr)
+        if (tester === undefined) tester = findTester(matchers, addr)
 
-            if (tester) {
-                found = false
-                for (tK in t) {
-                    if (hasOwn(t, tK) && tester(tK, srcK, t[tK], src[srcK], t, src)) {
-                        found = true
-                        break
-                    }
+        if (tester) {
+            found = false
+            for (tK in t) {
+                if (hasOwn(t, tK) && tester(tK, srcK, t[tK], src[srcK], t, src)) {
+                    found = true
+                    break
                 }
-                if (!found) tK = isArr(t) ? t.length : srcK
-            } else {
-                tK = isArr(t) && isArr(src) ? t.length : srcK
             }
+            if (!found) tK = isArr(t) ? t.length : srcK
+        } else {
+            tK = isArr(t) && isArr(src) ? t.length : srcK
+        }
 
-            if (hasOwn(t, tK) && isExtensible(t[tK]) && isExtensible(src[srcK])) {
-                stack.push([t[tK], src[srcK], addr.concat(tK)])
-                continue
-            }
-
+        if (!hasOwn(t, tK) || !isExtensible(t[tK]) || !isExtensible(src[srcK])) {
             t[tK] = src[srcK]
+            continue
+        }
+
+        addr.push(tK)
+        merge(matchers, t[tK], src[srcK], addr)
+        addr.pop()
+    }
+    return t
+}
+
+function filterMatchers (matchers, addr) {
+    var res = []
+    var idx = addr.length - 1
+    var matcher, path
+
+    for (var i = 0; i < matchers.length; i++) {
+        matcher = matchers[i]
+        path = matcher[0]
+
+        if ((path.length >= addr.length) && ((path[idx] === addr[idx]) || (path[idx] === '*'))) {
+            res.push(matcher)
         }
     }
 
-    return root
+    return res
 }
 
 function findTester (matchers, addr) {
-    var len = matchers.length
-    for (var i = 0; i < len; i++) {
-        if (isMatched(matchers[i][0], addr)) return matchers[i][1]
+    var idx = addr.length - 1
+    var matcher, path, tester
+
+    for (var i = 0; i < matchers.length; i++) {
+        matcher = matchers[i]
+        path = matcher[0]
+        tester = matcher[1]
+        if ((path[idx] === addr[idx]) || (path[idx] === '*')) return tester
     }
+
     return null
 }
 
-function isMatched (path, addr) {
+function isMatched (path, addr, depth) {
     var len = addr.length
     if (len !== path.length - 1) return false
     for (var i = 0; i < len; i++) {

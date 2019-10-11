@@ -31,85 +31,111 @@ test('If arrary, concat.', t => {
 })
 
 test('prop matcher', t => {
-    const target = { a: [
-        { id: 2, v: 'a' },
-        { id: 1, v: 'b' }
-    ] }
-    const src = { a: [
-        { id: 2, v: 'c' },
-        { id: 3, v: 'a' }
-    ] }
-    const matcher = { 'a': 'id' }
-    t.deepEqual(mergeri(matcher, target, src), { a: [
-        { id: 2, v: 'c' },
-        { id: 1, v: 'b' },
-        { id: 3, v: 'a' }
-    ] })
+    const target = {
+        a: [
+            { id: 2, v: 'a' },
+            { id: 1, v: 'b' }
+        ]
+    }
+    const src = {
+        a: [
+            { id: 2, v: 'c' },
+            { id: 3, v: 'a' }
+        ]
+    }
+    const matcher = { a: 'id' }
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: [
+            { id: 2, v: 'c' },
+            { id: 1, v: 'b' },
+            { id: 3, v: 'a' }
+        ]
+    })
 })
 
 test('If prop matcher is not available, ignore it.', t => {
-    const target = { a: [
-        { id: 2, v: 'a' },
-        { id: 1, v: 'b' }
-    ] }
-    const matcher = { 'a': 'id' }
+    const target = {
+        a: [
+            { id: 2, v: 'a' },
+            { id: 1, v: 'b' }
+        ]
+    }
+    const matcher = { a: 'id' }
     t.deepEqual(mergeri(matcher, target, { a: 1 }), { a: 1 })
 })
 
 test('array, object into arr', t => {
-    const target = { a: [
-        { id: 2, v: 'a' },
-        { id: 1, v: 'b' }
-    ] }
-    const src = { a: {
-        a: { id: 2, v: 'c' },
-        0: { id: 3, v: 'd' }
-    } }
-    const matcher = { 'a': 'id' }
-    t.deepEqual(mergeri(matcher, target, src), { a: [
-        { id: 2, v: 'c' },
-        { id: 1, v: 'b' },
-        { id: 3, v: 'd' }
-    ] })
+    const target = {
+        a: [
+            { id: 2, v: 'a' },
+            { id: 1, v: 'b' }
+        ]
+    }
+    const src = {
+        a: {
+            a: { id: 2, v: 'c' },
+            0: { id: 3, v: 'd' }
+        }
+    }
+    const matcher = { a: 'id' }
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: [
+            { id: 2, v: 'c' },
+            { id: 1, v: 'b' },
+            { id: 3, v: 'd' }
+        ]
+    })
 })
 
 test('complex matcher', t => {
-    const target = { a: [
-        { id: 1, other: 11, v: 'a' },
-        { id: 2, other: 12, v: 'b' },
-        { id: 3, other: 13, v: 'a' }
-    ] }
-    const src = { a: [
-        { id: 1, other: 13, v: 'c' },
-        { id: 2, other: 12, v: 'a' },
-        { id: 4, other: 11, v: 'a' }
-    ] }
+    const target = {
+        a: [
+            { id: 1, other: 11, v: 'a' },
+            { id: 2, other: 12, v: 'b' },
+            { id: 3, other: 13, v: 'a' }
+        ]
+    }
+    const src = {
+        a: [
+            { id: 1, other: 13, v: 'c' },
+            { id: 2, other: 12, v: 'a' },
+            { id: 4, other: 11, v: 'a' }
+        ]
+    }
     const matcher = { a: ['id', 'other'] }
-    t.deepEqual(mergeri(matcher, target, src), { a: [
-        { id: 1, other: 11, v: 'a' },
-        { id: 2, other: 12, v: 'a' },
-        { id: 3, other: 13, v: 'a' },
-        { id: 1, other: 13, v: 'c' },
-        { id: 4, other: 11, v: 'a' }
-    ] })
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: [
+            { id: 1, other: 11, v: 'a' },
+            { id: 2, other: 12, v: 'a' },
+            { id: 3, other: 13, v: 'a' },
+            { id: 1, other: 13, v: 'c' },
+            { id: 4, other: 11, v: 'a' }
+        ]
+    })
 })
 
 test('prop matcher on obj', t => {
-    const target = { a: {
-        a: { id: 1, v: 'a' },
-        b: { id: 2, v: 'b' },
-        c: { id: 3, v: 'c' } // removed by 4
-    } }
-    const src = { a: {
-        a: { id: 2, v: 'c' },
-        c: { id: 4, v: 'd' }
-    } }
+    const target = {
+        a: {
+            a: { id: 1, v: 'a' },
+            b: { id: 2, v: 'b' },
+            c: { id: 3, v: 'c' } // removed by 4
+        }
+    }
+    const src = {
+        a: {
+            a: { id: 2, v: 'c' },
+            c: { id: 4, v: 'd' }
+        }
+    }
     const matcher = { a: 'id' }
-    t.deepEqual(mergeri(matcher, target, src), { a: {
-        a: { id: 1, v: 'a' },
-        b: { id: 2, v: 'c' },
-        c: { id: 4, v: 'd' }
-    } })
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: {
+            a: { id: 1, v: 'a' },
+            b: { id: 2, v: 'c' },
+            c: { id: 4, v: 'd' }
+        }
+    })
 })
 
 test('prop matcher - ignore if not obj.', t => {
@@ -127,26 +153,44 @@ test('custom matcher', t => {
 })
 
 test('dot notation', t => {
-    const target = { a: { b: { c: {
-        d: [
-            { id: 2, v: 'a' },
-            { id: 1, v: 'b' }
-        ]
-    } } } }
-    const src = { a: { b: { c: {
-        d: [
-            { id: 2, v: 'c' },
-            { id: 3, v: 'a' }
-        ]
-    } } } }
+    const target = {
+        a: {
+            b: {
+                c: {
+                    d: [
+                        { id: 2, v: 'a' },
+                        { id: 1, v: 'b' }
+                    ]
+                }
+            }
+        }
+    }
+    const src = {
+        a: {
+            b: {
+                c: {
+                    d: [
+                        { id: 2, v: 'c' },
+                        { id: 3, v: 'a' }
+                    ]
+                }
+            }
+        }
+    }
     const matcher = { 'a.b.c.d': 'id' }
-    t.deepEqual(mergeri(matcher, target, src), { a: { b: { c: {
-        d: [
-            { id: 2, v: 'c' },
-            { id: 1, v: 'b' },
-            { id: 3, v: 'a' }
-        ]
-    } } } })
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: {
+            b: {
+                c: {
+                    d: [
+                        { id: 2, v: 'c' },
+                        { id: 1, v: 'b' },
+                        { id: 3, v: 'a' }
+                    ]
+                }
+            }
+        }
+    })
 })
 
 test('wildcard - first', t => {
@@ -167,52 +211,82 @@ test('wildcard - first', t => {
 })
 
 test('wildcard - last', t => {
-    const target = { a: { b: { c: [
-        { id: 2, v: 'a' },
-        { id: 1, v: 'b' }
-    ] } } }
-    const src = { a: { b: { c: [
+    const target = {
+        a: {
+            b: {
+                c: [
+                    { id: 2, v: 'a' },
+                    { id: 1, v: 'b' }
+                ]
+            }
+        }
+    }
+    const src = {
+        a: {
+            b: {
+                c: [
 
-        { id: 2, v: 'c' },
-        { id: 3, v: 'a' }
+                    { id: 2, v: 'c' },
+                    { id: 3, v: 'a' }
 
-    ] } } }
+                ]
+            }
+        }
+    }
     const matcher = { 'a.b.c.*': 'id' }
-    t.deepEqual(mergeri(matcher, target, src), { a: { b: { c: [
-        { id: 2, v: 'c' },
-        { id: 1, v: 'b' },
-        { id: 3, v: 'a' }
-    ] } } })
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: {
+            b: {
+                c: [
+                    { id: 2, v: 'c' },
+                    { id: 1, v: 'b' },
+                    { id: 3, v: 'a' }
+                ]
+            }
+        }
+    })
 })
 
 test('wildcard - middle, multiple', t => {
-    const target = { a: { b: [
-        {
-            a: [
-                { id: 2, v: 'a' },
-                { id: 1, v: 'b' }
+    const target = {
+        a: {
+            b: [
+                {
+                    a: [
+                        { id: 2, v: 'a' },
+                        { id: 1, v: 'b' }
+                    ]
+                }
             ]
         }
-    ] } }
-    const src = { a: { b: [
-        {
-            a: [
-                { id: 2, v: 'c' },
-                { id: 3, v: 'a' }
+    }
+    const src = {
+        a: {
+            b: [
+                {
+                    a: [
+                        { id: 2, v: 'c' },
+                        { id: 3, v: 'a' }
+                    ]
+                }
             ]
         }
-    ] } }
+    }
     const matcher = {
         'a.b.*.a': 'id',
         'a.b': (k1, k2) => k1 === k2
     }
-    t.deepEqual(mergeri(matcher, target, src), { a: { b: [
-        {
-            a: [
-                { id: 2, v: 'c' },
-                { id: 1, v: 'b' },
-                { id: 3, v: 'a' }
+    t.deepEqual(mergeri(matcher, target, src), {
+        a: {
+            b: [
+                {
+                    a: [
+                        { id: 2, v: 'c' },
+                        { id: 1, v: 'b' },
+                        { id: 3, v: 'a' }
+                    ]
+                }
             ]
         }
-    ] } })
+    })
 })
