@@ -17,7 +17,7 @@ function convertMatchers (matchers) {
         if (!hasOwn(matchers, k)) continue
 
         var tester = convertTester(matchers[k])
-        if (k.length > 1 && k.slice(-2) === '.*') k = k.slice(0, -2)
+        if (k.slice(-1) !== '*') k += '.*'
 
         res.push([k.split('.'), tester])
     }
@@ -49,8 +49,6 @@ function convertTester (v) {
 }
 
 function merge (matchers, t, src, addr) {
-    matchers = filterMatchers(matchers, addr)
-
     var tester, srcK, tK, found
 
     for (srcK in src) {
@@ -83,38 +81,15 @@ function merge (matchers, t, src, addr) {
     return t
 }
 
-function filterMatchers (matchers, addr) {
-    var res = []
-    var idx = addr.length - 1
-    var matcher, path
-
-    for (var i = 0; i < matchers.length; i++) {
-        matcher = matchers[i]
-        path = matcher[0]
-
-        if ((path.length >= addr.length) && ((path[idx] === addr[idx]) || (path[idx] === '*'))) {
-            res.push(matcher)
-        }
-    }
-
-    return res
-}
-
 function findTester (matchers, addr) {
-    var idx = addr.length - 1
-    var matcher, path, tester
-
-    for (var i = 0; i < matchers.length; i++) {
-        matcher = matchers[i]
-        path = matcher[0]
-        tester = matcher[1]
-        if ((path[idx] === addr[idx]) || (path[idx] === '*')) return tester
+    var len = matchers.length
+    for (var i = 0; i < len; i++) {
+        if (isMatched(matchers[i][0], addr)) return matchers[i][1]
     }
-
     return null
 }
 
-function isMatched (path, addr, depth) {
+function isMatched (path, addr) {
     var len = addr.length
     if (len !== path.length - 1) return false
     for (var i = 0; i < len; i++) {
